@@ -62,15 +62,43 @@ const getRandomInt = (min, max) => {
 }
 
 app.post('/api/persons', (request, response) => {
+
+    const person = request.body
+    console.log(person)
+
     let id = getRandomInt(1,100)
     while (id === 0){
         id = getRandomInt(1,100)
     }
-    const person = request.body
-    person.id = id
-    persons = persons.concat(person)
-    console.log(person)
-    response.json(person)  
+
+    if ((!person.name) || (person.name.trim() === "")) {
+        return response.status(400).json({ 
+            error: 'name missing' 
+        })    
+    }
+
+    if ((!person.number) || (person.number.trim() === "")) {
+        return response.status(400).json({ 
+            error: 'number missing' 
+        })    
+    }
+
+    const names = persons.map(person => person.name)
+    if (names.includes(person.name)) {
+        return response.status(400).json({ 
+            error: 'name must be unique' 
+        })    
+    }
+
+    const newPerson = {
+        id: id,
+        name: person.name,
+        number: person.number,
+    }
+
+    persons = persons.concat(newPerson)
+    console.log(newPerson)
+    response.json(newPerson)  
 })
 
 
