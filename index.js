@@ -3,7 +3,12 @@ const morgan = require('morgan')
 const app = express()
 
 app.use(express.json())
-app.use(morgan('tiny'))
+//app.use(morgan('tiny'))
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :json'));
+
+morgan.token('json', function(req, res){ return JSON.stringify(req.body); })
+
 
 let persons = [
     {
@@ -32,7 +37,7 @@ let persons = [
       }
 ]
 
-
+morgan.token('type', function (req, res) { return req.headers['content-type'] })
 
 app.get('/', (req, res) => {
     res.send('<h1>Hello!</h1>')
