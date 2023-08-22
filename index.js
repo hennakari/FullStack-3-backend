@@ -1,8 +1,11 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
+
 const app = express()
 
 const cors = require('cors')
+const Person = require('./models/person')
 
 app.use(cors())
 app.use(express.static('dist'))
@@ -14,6 +17,18 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :j
 
 morgan.token('json', function(req, res){ return JSON.stringify(req.body); })
 
+
+
+/* if (process.argv.length<3) {
+  console.log('give password as argument')
+  console.log(process.argv)
+  process.exit(1)
+}
+
+const password = process.argv[2]
+
+const url =
+    `mongodb+srv://hennakari:${password}@cluster0.t5hcsyp.mongodb.net/peopleApp?retryWrites=true&w=majority` */
 
 let persons = [
     {
@@ -48,12 +63,25 @@ app.get('/', (req, res) => {
     res.send('<h1>Hello!</h1>')
 })
   
-app.get('/api/persons', (req, res) => {
-    console.log(persons)
-    res.json(persons)
+app.get('/api/persons', (request, response) => {
+    Person.find({}).then(people => {
+        response.json(people)
+      })
 })
 
+app.get('/api/notes', (request, response) => {
+    Note.find({}).then(notes => {
+      response.json(notes)
+    })
+  })
+
 app.get('/api/persons/:id', (request, response) => {
+    Person.findById(request.params.id).then(person => {
+      response.json(person)
+    })
+})
+
+/* app.get('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
     const person = persons.find(person => person.id === id)
     if (person) {
@@ -61,9 +89,9 @@ app.get('/api/persons/:id', (request, response) => {
       } else {
         response.status(404).end()
       }
-})
+}) */
 
-const getRandomInt = (min, max) => {
+/* const getRandomInt = (min, max) => {
     min = Math.ceil(min)
     max = Math.floor(max)
     const id =  Math.floor(Math.random() * (max - min) + min)
@@ -73,9 +101,30 @@ const getRandomInt = (min, max) => {
         return 0
     }
     return id
-}
+} */
 
 app.post('/api/persons', (request, response) => {
+    const body = request.body
+  
+    if (body.name === undefined) {
+      return response.status(400).json({ error: 'name missing' })
+    }
+
+    if (body.number === undefined) {
+        return response.status(400).json({ error: 'number missing' })
+      }
+  
+    const person = new Person({
+        name: body.name,
+        number: body.number
+    })
+  
+    person.save().then(savedPerson => {
+      response.json(savedPerson)
+    })
+  })
+
+/* app.post('/api/persons', (request, response) => {
 
     const person = request.body
     console.log(person)
@@ -113,7 +162,7 @@ app.post('/api/persons', (request, response) => {
     persons = persons.concat(newPerson)
     console.log(newPerson)
     response.json(newPerson)  
-})
+}) */
 
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -129,7 +178,7 @@ app.get('/info', (req, res) => {
     res.send("<p>Phonebook has info for "+dataLength+" people</p><p>"+date+"<p>")
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
