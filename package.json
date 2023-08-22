@@ -7,7 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:ui": "rm -rf build && cd ../FullStack-3-frontend && npm run build && cp -r build ../FullStack-3-backend",
+    "build:ui": "@powershell Remove-Item -Recurse -Force dist && cd ../FullStack-3-frontend && npm run build && @powershell Copy-Item dist -Recurse ../FullStack-3-backend",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
   },
   "repository": {
