@@ -62,17 +62,13 @@ app.get('/', (req, res) => {
     res.send('<h1>Hello!</h1>')
 })
   
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
     Person.find({}).then(people => {
         response.json(people)
       })
+      .catch(error => next(error))
 })
 
-app.get('/api/notes', (request, response) => {
-    Note.find({}).then(notes => {
-      response.json(notes)
-    })
-  })
 
 app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id).then(person => {
@@ -133,11 +129,15 @@ app.put('/api/persons/:id', (request, response, next) => {
 })
 
 
-app.get('/info', (req, res) => {
-    const dataLength = persons.length
-    const date = new Date()
-    res.send("<p>Phonebook has info for "+dataLength+" people</p><p>"+date+"<p>")
+app.get('/info', (request, response, next) => {
+    Person.find({}).then(people => {
+        const dataLength = people.length
+        const date = new Date()
+        response.send("<p>Phonebook has info for "+dataLength+" people</p><p>"+date+"<p>")
+    })
+    .catch(error => next(error))
 })
+
 
 app.use(unknownEndpoint)
 app.use(errorHandler)
